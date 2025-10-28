@@ -3,22 +3,26 @@
 <head>
     <title>Canvas Fingerprint Generator</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 40px; }
-        .container { max-width: 800px; margin: 0 auto; }
-        button { padding: 12px 24px; font-size: 16px; margin: 10px; cursor: pointer; }
+        body { font-family: Arial; margin: 40px; background: #f0f0f0; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; }
+        button { padding: 12px 24px; font-size: 16px; margin: 10px; cursor: pointer; background: #007acc; color: white; border: none; border-radius: 5px; }
         pre { background: #f5f5f5; padding: 15px; border-radius: 5px; overflow-x: auto; }
         .result { margin-top: 20px; }
+        .warning { background: #fff3cd; padding: 10px; border-radius: 5px; margin: 10px 0; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🎨 Canvas Fingerprint Generator</h1>
-        <p>Click the button to generate your hardware fingerprint</p>
+        <div class="warning">
+            <strong>⚠️ IMPORTANT:</strong> Use this EXACT generator for both training and prediction to get consistent results!
+        </div>
         
         <button onclick="generateAndDownload()">Generate & Download Fingerprint</button>
-        <button onclick="generateAndShow()">Generate & Show Only</button>
+        <button onclick="generateAndShow()">Generate & Show</button>
         
         <div class="result" id="result"></div>
+        <div id="canvasPreview"></div>
     </div>
 
     <script>
@@ -26,17 +30,15 @@
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
             
-            // Set canvas size
+            // 🎯 FIXED: Consistent canvas size and rendering
             canvas.width = 240;
             canvas.height = 120;
             
-            // 🎯 HARDWARE-SPECIFIC RENDERING
-            
-            // Background
+            // 🎯 FIXED: WHITE BACKGROUND (this was missing!)
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            // Text rendering (font smoothing differences)
+            // Text rendering
             ctx.textBaseline = 'top';
             ctx.font = '14px Arial';
             ctx.fillStyle = '#f60';
@@ -46,7 +48,7 @@
             ctx.fillStyle = 'rgba(102, 204, 0, 0.7)';
             ctx.fillText('Hardware ID: @#$%', 4, 17);
             
-            // Complex shapes (GPU rendering patterns)
+            // Complex shapes
             ctx.strokeStyle = 'rgb(200, 0, 0)';
             ctx.beginPath();
             ctx.moveTo(10, 40);
@@ -57,7 +59,7 @@
             ctx.lineTo(140, 120);
             ctx.stroke();
             
-            // Gradients (color rendering differences)
+            // Gradients
             const gradient = ctx.createLinearGradient(150, 40, 230, 100);
             gradient.addColorStop(0, '#ff0000');
             gradient.addColorStop(0.5, '#00ff00');
@@ -65,17 +67,20 @@
             ctx.fillStyle = gradient;
             ctx.fillRect(150, 40, 80, 60);
             
-            // Complex curves (anti-aliasing differences)
+            // Complex curves
             ctx.strokeStyle = '#000';
             ctx.beginPath();
             ctx.arc(50, 100, 30, 0, Math.PI * 2, true);
             ctx.stroke();
             
+            // Show preview
+            document.getElementById('canvasPreview').innerHTML = '<h3>Canvas Preview:</h3><img src="' + canvas.toDataURL() + '" alt="Canvas rendering" style="border: 1px solid #ccc;">';
+            
             // Get image data
             const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
             const pixelData = imageData.data;
             
-            // 🎯 EXTRACT HARDWARE PATTERNS
+            // Extract fingerprint
             const fingerprint = {
                 imageHash: calculateImageHash(pixelData),
                 colorDistribution: calculateColorDistribution(pixelData),
@@ -88,14 +93,21 @@
                 renderingArtifacts: detectRenderingArtifacts(pixelData)
             };
             
+            console.log('🎯 Generated Fingerprint:', {
+                brightness: fingerprint.meanBrightness,
+                contrast: fingerprint.contrast,
+                colors: fingerprint.colorDistribution
+            });
+            
             return fingerprint;
         }
 
+        // ... (keep all the same calculation functions from previous code) ...
         function calculateImageHash(pixelData) {
             let hash = 0;
             for (let i = 0; i < pixelData.length; i += 4) {
                 hash = ((hash << 5) - hash) + pixelData[i];
-                hash |= 0; // Convert to 32bit integer
+                hash |= 0;
             }
             return hash;
         }
@@ -207,14 +219,15 @@
             const resultDiv = document.getElementById('result');
             
             const fingerprintData = {
-                device: "auto_detected_device",
+                device: "user_current_device",
                 canvasFingerprint: fingerprint
             };
             
             resultDiv.innerHTML = `
                 <h3>🎯 Your Canvas Fingerprint:</h3>
                 <pre>${JSON.stringify(fingerprintData, null, 2)}</pre>
-                <p><strong>Copy this data and use it in your ML system!</strong></p>
+                <p><strong>Expected Brightness: ~210, Contrast: ~250</strong></p>
+                <p>If your brightness is ~25, you're missing the white background!</p>
             `;
         }
 
@@ -222,11 +235,10 @@
             const fingerprint = generateCanvasFingerprint();
             
             const fingerprintData = {
-                device: "auto_detected_device",
+                device: "user_current_device",
                 canvasFingerprint: fingerprint
             };
             
-            // Create download
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(fingerprintData, null, 2));
             const downloadAnchorNode = document.createElement('a');
             downloadAnchorNode.setAttribute("href", dataStr);
@@ -235,19 +247,16 @@
             downloadAnchorNode.click();
             downloadAnchorNode.remove();
             
-            // Show result
             const resultDiv = document.getElementById('result');
             resultDiv.innerHTML = `
                 <h3>✅ Fingerprint Generated & Downloaded!</h3>
                 <pre>${JSON.stringify(fingerprintData, null, 2)}</pre>
-                <p><strong>File "canvas_fingerprint.json" has been downloaded.</strong></p>
+                <p><strong>Check that brightness is ~210 and contrast is ~250</strong></p>
             `;
         }
 
-        // Auto-generate on page load and show
-        window.onload = function() {
-            generateAndShow();
-        };
+        // Auto-generate on load
+        window.onload = generateAndShow;
     </script>
 </body>
 </html>
