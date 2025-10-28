@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas Fingerprint Generator</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        button { padding: 12px 24px; font-size: 16px; margin: 10px; cursor: pointer; }
+        .result { background: #f5f5f5; padding: 20px; margin: 20px 0; border-radius: 8px; }
+        pre { white-space: pre-wrap; word-wrap: break-word; }
+        .download-btn { background: #4CAF50; color: white; border: none; border-radius: 4px; }
+        .generate-btn { background: #2196F3; color: white; border: none; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Canvas Fingerprint Generator</h1>
+        <p>Generate hardware-specific canvas fingerprints for your ML system</p>
+        
+        <button class="generate-btn" onclick="generateAndDisplayFingerprint()">
+            🎯 Generate Canvas Fingerprint
+        </button>
+        
+        <div class="result" id="result" style="display: none;">
+            <h3>📊 Canvas Fingerprint Data</h3>
+            <pre id="fingerprintData"></pre>
+            
+            <button class="download-btn" onclick="downloadFingerprint()">
+                💾 Download as JSON
+            </button>
+            <button class="download-btn" onclick="copyToClipboard()">
+                📋 Copy to Clipboard
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // 🎯 CANVAS FINGERPRINT GENERATOR
+        function generateCanvasFingerprint() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Set canvas dimensions
+            canvas.width = 240;
+            canvas.height = 120;
+            
+            // 🎨 HARDWARE-SPECIFIC RENDERING OPERATIONS
+            
+            // Clear canvas
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Text rendering (font smoothing differences)
+            ctx.textBaseline = 'top';
+            ctx.font = '14px "Arial", "Helvetica", sans-serif';
+            ctx.fillStyle = '#f60';
+            ctx.fillRect(125, 1, 62, 20);
+            ctx.fillStyle = '#069';
+            ctx.fillText('Hardware ID: @#$%', 2, 15);
+            ctx.fillStyle = 'rgba(102, 204, 0, 0.7)';
+            ctx.fillText('Hardware ID: @#$%', 4, 17);
+            
+            // Complex shapes (GPU rendering patterns)
+            ctx.strokeStyle = 'rgb(200, 0, 0)';
+            ctx.beginPath();
+            ctx.moveTo(10, 40);
+            ctx.lineTo(140, 40);
+            ctx.lineTo(10, 80);
+            ctx.lineTo(140, 80);
+            ctx.lineTo(10, 120);
+            ctx.lineTo(140, 120);
+            ctx.stroke();
+            
+            // Gradients (color rendering differences)
+            const gradient = ctx.createLinearGradient(150, 40, 230, 100);
+            gradient.addColorStop(0, '#ff0000');
+            gradient.addColorStop(0.5, '#00ff00');
+            gradient.addColorStop(1, '#0000ff');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(150, 40, 80, 60);
+            
+            // Complex curves (anti-aliasing differences)
+            ctx.strokeStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(50, 100, 30, 0, Math.PI * 2, true);
+            ctx.stroke();
+            
+            // Additional geometric shapes
+            ctx.fillStyle = 'rgba(255, 0, 255, 0.5)';
+            ctx.beginPath();
+            ctx.moveTo(180, 20);
+            ctx.lineTo(210, 20);
+            ctx.lineTo(195, 40);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Get image data for analysis
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const pixelData = imageData.data;
+            
+            // 🎯 EXTRACT HARDWARE PATTERNS
+            const fingerprint = {
+                imageHash: simpleHash(pixelData),
+                colorDistribution: calculateColorDistribution(pixelData),
+                gradientPatterns: analyzeGradientPatterns(pixelData, canvas.width),
+                edgeDetection: detectEdgePatterns(pixelData, canvas.width),
+                noisePattern: analyzeNoisePattern(pixelData),
+                entropy: calculateEntropy(pixelData),
+                contrast: calculateContrast(pixelData),
+                meanBrightness: calculateMeanBrightness(pixelData),
+                renderingArtifacts: detectRenderingArtifacts(pixelData),
+                timestamp: new Date().toISOString(),
+                userAgent: navigator.userAgent,
+                screenResolution: `${screen.width}x${screen.height}`,
+                colorDepth: screen.colorDepth,
+                hardwareConcurrency: navigator.hardwareConcurrency || 'unknown'
+            };
+            
+            return fingerprint;
+        }
+
+        // 🎯 HARDWARE PATTERN EXTRACTION METHODS
+        
+        function simpleHash(pixelData) {
+            let hash = 0;
+            for (let i = 0; i < pixelData.length; i += 4) {
+                hash = ((hash << 5) - hash) + pixelData[i];
+                hash |= 0; // Convert to 32bit integer
+            }
+            return hash;
+        }
+
+        function calculateColorDistribution(pixelData) {
+            const distribution = { r: 0, g: 0, b: 0 };
+            for (let i = 0; i < pixelData.length; i += 4) {
+                distribution.r += pixelData[i];
+                distribution.g += pixelData[i + 1];
+                distribution.b += pixelData[i + 2];
+            }
+            const total = pixelData.length / 4;
+            return {
+                r: distribution.r / total,
+                g: distribution.g / total,
+                b: distribution.b / total
+            };
+        }
+
+        function analyzeGradientPatterns(pixelData, width) {
+            const patterns = [];
+            for (let y = 0; y < 120; y += 10) {
+                let rowPattern = 0;
+                for (let x = 0; x < 240; x += 10) {
+                    const idx = (y * width + x) * 4;
+                    const brightness = (pixelData[idx] + pixelData[idx + 1] + pixelData[idx + 2]) / 3;
+                    rowPattern = (rowPattern << 2) | (brightness > 128 ? 1 : 0);
+                }
+                patterns.push(rowPattern);
+            }
+            return patterns;
+        }
+
+        function detectEdgePatterns(pixelData, width) {
+            const edges = [];
+            for (let y = 1; y < 119; y++) {
+                for (let x = 1; x < 239; x++) {
+                    const idx = (y * width + x) * 4;
+                    const current = (pixelData[idx] + pixelData[idx + 1] + pixelData[idx + 2]) / 3;
+                    const right = (pixelData[idx + 4] + pixelData[idx + 5] + pixelData[idx + 6]) / 3;
+                    const bottom = (pixelData[idx + width * 4] + pixelData[idx + width * 4 + 1] + pixelData[idx + width * 4 + 2]) / 3;
+                    
+                    const edgeStrength = Math.abs(current - right) + Math.abs(current - bottom);
+                    if (edgeStrength > 50) edges.push({ x, y, strength: edgeStrength });
+                }
+            }
+            return edges.length;
+        }
+
+        function analyzeNoisePattern(pixelData) {
+            let noise = 0;
+            for (let i = 4; i < pixelData.length; i += 4) {
+                const prev = (pixelData[i - 4] + pixelData[i - 3] + pixelData[i - 2]) / 3;
+                const curr = (pixelData[i] + pixelData[i + 1] + pixelData[i + 2]) / 3;
+                noise += Math.abs(curr - prev);
+            }
+            return noise / (pixelData.length / 4);
+        }
+
+        function calculateEntropy(pixelData) {
+            const brightnessCounts = Array(256).fill(0);
+            for (let i = 0; i < pixelData.length; i += 4) {
+                const brightness = Math.floor((pixelData[i] + pixelData[i + 1] + pixelData[i + 2]) / 3);
+                brightnessCounts[brightness]++;
+            }
+            
+            let entropy = 0;
+            const total = pixelData.length / 4;
+            for (let count of brightnessCounts) {
+                if (count > 0) {
+                    const p = count / total;
+                    entropy -= p * Math.log2(p);
+                }
+            }
+            return entropy;
+        }
+
+        function calculateContrast(pixelData) {
+            let min = 255, max = 0;
+            for (let i = 0; i < pixelData.length; i += 4) {
+                const brightness = (pixelData[i] + pixelData[i + 1] + pixelData[i + 2]) / 3;
+                if (brightness < min) min = brightness;
+                if (brightness > max) max = brightness;
+            }
+            return max - min;
+        }
+
+        function calculateMeanBrightness(pixelData) {
+            let total = 0;
+            for (let i = 0; i < pixelData.length; i += 4) {
+                total += (pixelData[i] + pixelData[i + 1] + pixelData[i + 2]) / 3;
+            }
+            return total / (pixelData.length / 4);
+        }
+
+        function detectRenderingArtifacts(pixelData) {
+            let artifacts = 0;
+            for (let i = 0; i < pixelData.length; i += 4) {
+                const r = pixelData[i], g = pixelData[i + 1], b = pixelData[i + 2];
+                if (Math.abs(r - g) > 100 || Math.abs(g - b) > 100 || Math.abs(b - r) > 100) {
+                    artifacts++;
+                }
+            }
+            return artifacts / (pixelData.length / 4);
+        }
+
+        // 🎯 UI FUNCTIONS
+        
+        let currentFingerprint = null;
+
+        function generateAndDisplayFingerprint() {
+            try {
+                currentFingerprint = generateCanvasFingerprint();
+                
+                // Format for display
+                const displayData = {
+                    device: "auto_generated",
+                    canvasFingerprint: currentFingerprint
+                };
+                
+                document.getElementById('fingerprintData').textContent = 
+                    JSON.stringify(displayData, null, 2);
+                document.getElementById('result').style.display = 'block';
+                
+                console.log('✅ Canvas fingerprint generated successfully!');
+                console.log('Fingerprint data:', currentFingerprint);
+                
+            } catch (error) {
+                alert('Error generating fingerprint: ' + error.message);
+                console.error('Fingerprint generation error:', error);
+            }
+        }
+
+        function downloadFingerprint() {
+            if (!currentFingerprint) {
+                alert('Please generate a fingerprint first!');
+                return;
+            }
+            
+            const data = {
+                device: "auto_generated",
+                canvasFingerprint: currentFingerprint
+            };
+            
+            const dataStr = JSON.stringify(data, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `canvas-fingerprint-${Date.now()}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            console.log('📥 Fingerprint downloaded!');
+        }
+
+        function copyToClipboard() {
+            if (!currentFingerprint) {
+                alert('Please generate a fingerprint first!');
+                return;
+            }
+            
+            const data = {
+                device: "auto_generated",
+                canvasFingerprint: currentFingerprint
+            };
+            
+            const dataStr = JSON.stringify(data, null, 2);
+            
+            navigator.clipboard.writeText(dataStr).then(() => {
+                alert('✅ Fingerprint copied to clipboard!');
+            }).catch(err => {
+                alert('❌ Failed to copy: ' + err);
+            });
+        }
+
+        // Auto-generate on page load
+        window.addEventListener('load', function() {
+            console.log('🔄 Page loaded - ready to generate fingerprints');
+        });
+
+    </script>
+</body>
+</html>
